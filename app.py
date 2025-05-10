@@ -358,6 +358,17 @@ def view_tooth_diagram(id):
     appointment = Appointment.query.get_or_404(id)
     return render_template('tooth_diagram.html', appointment=appointment)
 
+@app.route('/debug')
+def debug():
+    headers = dict(request.headers)
+    user_agent = request.headers.get('User-Agent', 'No User-Agent')
+    return jsonify({
+        'headers': headers,
+        'user_agent': user_agent,
+        'remote_addr': request.remote_addr,
+        'is_mobile': 'Mobile' in user_agent or 'Android' in user_agent or 'iPhone' in user_agent
+    })
+
 def init_db():
     with app.app_context():
         db.create_all()
