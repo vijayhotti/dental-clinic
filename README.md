@@ -27,8 +27,8 @@ A comprehensive dental clinic management system built with Flask, featuring appo
 
 1. Clone the repository:
 ```bash
-git clone [your-repository-url]
-cd dental_clinic
+git clone https://github.com/vijayhotti/dental-clinic.git
+cd dental-clinic
 ```
 
 2. Create and activate a virtual environment:
@@ -84,5 +84,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-Your Name - your.email@example.com
-Project Link: [https://github.com/yourusername/dental_clinic](https://github.com/yourusername/dental_clinic) 
+Vijay Hotti - [@vijayhotti](https://github.com/vijayhotti)
+Project Link: [https://github.com/vijayhotti/dental-clinic](https://github.com/vijayhotti/dental-clinic)
