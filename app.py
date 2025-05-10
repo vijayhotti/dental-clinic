@@ -35,9 +35,6 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 csrf = CSRFProtect(app)
 
-# Set environment
-app.config['ENV'] = os.environ.get('FLASK_ENV', 'production')
-
 # Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
