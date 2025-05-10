@@ -372,9 +372,11 @@ def debug():
 
 @app.before_request
 def before_request():
-    if not request.is_secure and app.config.get('ENV') != "development":
-        url = request.url.replace('http://', 'https://', 1)
-        return redirect(url, code=301)
+    # Temporarily disable HTTPS redirect for development
+    # if not request.is_secure and app.config.get('ENV') != "development":
+    #     url = request.url.replace('http://', 'https://', 1)
+    #     return redirect(url, code=301)
+    pass
 
 def init_db():
     with app.app_context():
