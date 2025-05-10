@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFError
 from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
@@ -85,6 +86,12 @@ def internal_error(error):
     db.session.rollback()
     logger.error(f"Internal server error: {error}")
     return render_template('500.html'), 500
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    logger.error(f"CSRF error: {e.description}")
+    flash('Security token has expired. Please try again.', 'error')
+    return redirect(url_for('appointments'))
 
 # Routes
 @app.route('/')
@@ -257,11 +264,8 @@ def export_appointments():
 def appointments():
     if request.method == 'POST':
         try:
-            # Ensure CSRF token is valid
-            csrf_token = request.form.get('csrf_token')
-            if not csrf_token or not csrf.validate_csrf(csrf_token):
-                logger.error("CSRF token validation failed")
-                raise ValueError("Invalid form submission. Please try again.")
+            # Let Flask-WTF handle CSRF validation automatically
+            # An error will be raised and caught by the error handler if the token is invalid
             
             # Log the full request context
             logger.debug("Processing appointment request")
