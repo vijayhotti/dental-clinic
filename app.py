@@ -257,10 +257,15 @@ def export_appointments():
 def appointments():
     if request.method == 'POST':
         try:
+            # Ensure CSRF token is valid
+            csrf_token = request.form.get('csrf_token')
+            if not csrf_token or not csrf.validate_csrf(csrf_token):
+                logger.error("CSRF token validation failed")
+                raise ValueError("Invalid form submission. Please try again.")
+            
             # Log the full request context
             logger.debug("Processing appointment request")
-            logger.debug("Request form data: %s", request.form)
-            logger.debug("Request headers: %s", dict(request.headers))
+            logger.debug("Request form data: %s", {k: v for k, v in request.form.items() if k != 'csrf_token'})
             
             # Validate required fields
             required_fields = ['name', 'email', 'phone', 'date', 'service']
@@ -268,12 +273,22 @@ def appointments():
                 if not request.form.get(field):
                     raise ValueError(f"Missing required field: {field}")
             
+            # Validate date format
+            try:
+                appointment_date = datetime.strptime(request.form['date'], '%Y-%m-%d')
+                if appointment_date.date() < datetime.now().date():
+                    raise ValueError("Appointment date cannot be in the past")
+            except ValueError as ve:
+                if "time data" in str(ve):
+                    raise ValueError("Invalid date format. Please use YYYY-MM-DD format")
+                raise ve
+            
             # Create appointment object
             new_appointment = Appointment(
                 patient_name=request.form['name'],
                 patient_email=request.form['email'],
                 patient_phone=request.form['phone'],
-                appointment_date=datetime.strptime(request.form['date'], '%Y-%m-%d'),
+                appointment_date=appointment_date,
                 service_type=request.form['service'],
                 notes=request.form.get('notes', '')
             )
@@ -286,8 +301,13 @@ def appointments():
                 'service_type': new_appointment.service_type
             })
             
-            # Check database connection
+            # Check database connection and instance directory permissions
             try:
+                instance_path = os.path.dirname(db_path)
+                if not os.access(instance_path, os.W_OK):
+                    logger.error("No write permission to instance directory: %s", instance_path)
+                    raise RuntimeError("Database access error. Please contact support.")
+                
                 db.session.execute('SELECT 1')
             except Exception as db_error:
                 logger.error("Database connection error: %s", str(db_error))
@@ -305,7 +325,7 @@ def appointments():
             db.session.rollback()
             error_msg = str(ve)
             logger.warning("Validation error: %s", error_msg)
-            flash(f'Please check your input: {error_msg}', 'error')
+            flash(error_msg, 'error')
             return redirect(url_for('appointments'))
             
         except Exception as e:
@@ -315,11 +335,13 @@ def appointments():
             logger.error("Database path: %s", app.config['SQLALCHEMY_DATABASE_URI'])
             flash('An error occurred while scheduling the appointment. Please try again later.', 'error')
             return redirect(url_for('appointments'))
-            
+    
+    # GET request - display the form
     return render_template('appointments.html')
 
 @app.route('/services')
 def services():
+    return render_template('services.html')
 
 @app.route('/contact')
 def contact():
