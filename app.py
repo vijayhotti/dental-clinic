@@ -24,7 +24,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:/
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-app.config['PREFERRED_URL_SCHEME'] = 'https'  # Force HTTPS
 
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -35,13 +34,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 csrf = CSRFProtect(app)
-
-# Force HTTPS
-@app.before_request
-def before_request():
-    if not request.is_secure and os.environ.get('FLASK_ENV') != 'development':
-        url = request.url.replace('http://', 'https://', 1)
-        return redirect(url, code=301)
 
 # Models
 class User(UserMixin, db.Model):
