@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf.csrf import CSRFProtect
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,6 +11,7 @@ import csv
 from io import StringIO
 from sqlalchemy import and_
 from werkzeug.utils import secure_filename
+import json
 
 # Load environment variables
 load_dotenv()
@@ -18,10 +19,10 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configuration
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-secret-key')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///dental_clinic.db')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///dental_clinic.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'static/uploads/teeth'
+app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 # Ensure upload directory exists
@@ -374,4 +375,5 @@ def init_db():
 
 if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', port=8080, debug=True) 
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port) 
