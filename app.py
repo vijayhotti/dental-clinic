@@ -370,6 +370,12 @@ def debug():
         'is_mobile': 'Mobile' in user_agent or 'Android' in user_agent or 'iPhone' in user_agent
     })
 
+@app.before_request
+def before_request():
+    if not request.is_secure and app.config.get('ENV') != "development":
+        url = request.url.replace('http://', 'https://', 1)
+        return redirect(url, code=301)
+
 def init_db():
     with app.app_context():
         db.create_all()
