@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center py-5">
+    <h1 class="display-4">Welcome to Our Dental Clinic</h1>
+    <p class="lead">Professional dental care for your entire family</p>
+    <a href="{{ url_for('appointments') }}" class="btn btn-primary btn-lg">Book an Appointment</a>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Expert Care</h5>
+                <p class="card-text">Our team of experienced dentists provides the highest quality dental care.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Modern Technology</h5>
+                <p class="card-text">We use the latest dental technology to ensure the best treatment.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Comfortable Environment</h5>
+                <p class="card-text">We create a relaxing atmosphere for all our patients.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

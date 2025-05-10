@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+
+{% block title %}Tooth Diagram - {{ appointment.patient_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Dental Chart - {{ appointment.patient_name }}</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="tooth-diagram">
+                        <!-- Full Mouth Image -->
+                        <div class="full-mouth-image mb-4">
+                            <img src="{{ url_for('static', filename='images/teeth/tooth.jpeg') }}" alt="Full Mouth" class="img-fluid">
+                            <div class="tooth-overlay">
+                                {% for i in range(1, 33) %}
+                                <div class="tooth-area" data-tooth="{{ i }}" onclick="selectTooth({{ i }})"></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Teeth Grid -->
+                        <div class="teeth-grid-container">
+                            <!-- Upper Teeth -->
+                            <div class="upper-teeth mb-4">
+                                <h4 class="text-center mb-3">Upper Teeth</h4>
+                                <div class="teeth-grid">
+                                    {% for i in range(16, 33) %}
+                                    <div class="tooth" data-tooth="{{ i }}" onclick="selectTooth({{ i }})">
+                                        <img src="{{ url_for('static', filename='images/teeth/tooth.jpeg') }}" alt="Tooth {{ i }}" class="tooth-image">
+                                        <span class="tooth-number">{{ i }}</span>
+                                        <div class="tooth-condition" id="tooth-{{ i }}"></div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Lower Teeth -->
+                            <div class="lower-teeth">
+                                <h4 class="text-center mb-3">Lower Teeth</h4>
+                                <div class="teeth-grid">
+                                    {% for i in range(1, 17) %}
+                                    <div class="tooth" data-tooth="{{ i }}" onclick="selectTooth({{ i }})">
+                                        <img src="{{ url_for('static', filename='images/teeth/tooth.jpeg') }}" alt="Tooth {{ i }}" class="tooth-image">
+                                        <span class="tooth-number">{{ i }}</span>
+                                        <div class="tooth-condition" id="tooth-{{ i }}"></div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Add Condition</h5>
+                </div>
+                <div class="card-body">
+                    <form id="conditionForm" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" id="selectedTooth">
+                        <div class="mb-3">
+                            <label for="condition" class="form-label">Condition</label>
+                            <select class="form-select" id="condition" required>
+                                <option value="">Select condition...</option>
+                                <option value="cavity">Cavity</option>
+                                <option value="crown">Crown</option>
+                                <option value="filling">Filling</option>
+                                <option value="root_canal">Root Canal</option>
+                                <option value="extraction">Extraction</option>
+                                <option value="sensitive">Sensitive</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Upload Image (Optional)</label>
+                            <input type="file" class="form-control" id="image" accept="image/*">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Condition</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Legend</h5>
+                </div>
+                <div class="card-body">
+                    <div class="legend">
+                        <div class="legend-item">
+                            <span class="color-box cavity"></span>
+                            <span>Cavity</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-box crown"></span>
+                            <span>Crown</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-box filling"></span>
+                            <span>Filling</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-box root_canal"></span>
+                            <span>Root Canal</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-box extraction"></span>
+                            <span>Extraction</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-box sensitive"></span>
+                            <span>Sensitive</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Condition History -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Condition History</h5>
+                </div>
+                <div class="card-body">
+                    <div id="conditionHistory" class="condition-history">
+                        <!-- Conditions will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tooth Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="previewImage" src="" alt="Tooth Image" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.tooth-diagram {
+    padding: 20px;
+}
+
+.full-mouth-image {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.tooth-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.tooth-area {
+    position: absolute;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.tooth-area:hover {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.teeth-grid-container {
+    margin-top: 30px;
+}
+
+.teeth-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+    margin: 0 auto;
+    max-width: 800px;
+}
+
+.tooth {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.tooth:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0,123,255,0.5);
+}
+
+.tooth-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.3;
+}
+
+.tooth-number {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8em;
+    color: #666;
+    z-index: 1;
+}
+
+.tooth-condition {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    z-index: 2;
+}
+
+.legend {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.color-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+}
+
+.cavity { background-color: #dc3545; }
+.crown { background-color: #ffc107; }
+.filling { background-color: #28a745; }
+.root_canal { background-color: #17a2b8; }
+.extraction { background-color: #6c757d; }
+.sensitive { background-color: #fd7e14; }
+
+.condition-history {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.condition-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.condition-item:last-child {
+    border-bottom: none;
+}
+
+.condition-item img {
+    max-width: 100%;
+    height: auto;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.selected {
+    border: 2px solid #007bff;
+    box-shadow: 0 0 10px rgba(0,123,255,0.5);
+}
+
+/* Tooth area positions */
+.tooth-area[data-tooth="1"] { top: 75%; left: 10%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="2"] { top: 75%; left: 15%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="3"] { top: 75%; left: 20%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="4"] { top: 75%; left: 25%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="5"] { top: 75%; left: 30%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="6"] { top: 75%; left: 35%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="7"] { top: 75%; left: 40%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="8"] { top: 75%; left: 45%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="9"] { top: 75%; left: 50%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="10"] { top: 75%; left: 55%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="11"] { top: 75%; left: 60%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="12"] { top: 75%; left: 65%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="13"] { top: 75%; left: 70%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="14"] { top: 75%; left: 75%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="15"] { top: 75%; left: 80%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="16"] { top: 75%; left: 85%; width: 5%; height: 10%; }
+
+.tooth-area[data-tooth="17"] { top: 15%; left: 10%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="18"] { top: 15%; left: 15%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="19"] { top: 15%; left: 20%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="20"] { top: 15%; left: 25%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="21"] { top: 15%; left: 30%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="22"] { top: 15%; left: 35%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="23"] { top: 15%; left: 40%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="24"] { top: 15%; left: 45%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="25"] { top: 15%; left: 50%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="26"] { top: 15%; left: 55%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="27"] { top: 15%; left: 60%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="28"] { top: 15%; left: 65%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="29"] { top: 15%; left: 70%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="30"] { top: 15%; left: 75%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="31"] { top: 15%; left: 80%; width: 5%; height: 10%; }
+.tooth-area[data-tooth="32"] { top: 15%; left: 85%; width: 5%; height: 10%; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentConditions = [];
+
+function loadConditions() {
+    fetch(`/api/appointments/{{ appointment.id }}/teeth`)
+        .then(response => response.json())
+        .then(data => {
+            currentConditions = data.conditions;
+            updateToothDisplay();
+            updateConditionHistory();
+        })
+        .catch(error => {
+            console.error('Error loading conditions:', error);
+            alert('Error loading tooth conditions');
+        });
+}
+
+function updateToothDisplay() {
+    // Clear all conditions
+    document.querySelectorAll('.tooth-condition').forEach(el => {
+        el.style.backgroundColor = '';
+        el.title = '';
+    });
+    
+    // Apply conditions
+    currentConditions.forEach(condition => {
+        const toothEl = document.getElementById(`tooth-${condition.tooth_number}`);
+        if (toothEl) {
+            toothEl.style.backgroundColor = getConditionColor(condition.condition);
+            toothEl.title = `${condition.condition}: ${condition.notes}`;
+        }
+    });
+}
+
+function updateConditionHistory() {
+    const historyEl = document.getElementById('conditionHistory');
+    historyEl.innerHTML = '';
+    
+    currentConditions.forEach(condition => {
+        const item = document.createElement('div');
+        item.className = 'condition-item';
+        
+        let content = `
+            <strong>Tooth ${condition.tooth_number}</strong>
+            <span class="badge ${getConditionBadgeClass(condition.condition)}">${condition.condition}</span>
+            <p class="mb-1">${condition.notes || 'No notes'}</p>
+        `;
+        
+        if (condition.image_url) {
+            content += `
+                <img src="${condition.image_url}" alt="Tooth ${condition.tooth_number}" 
+                     onclick="showImagePreview('${condition.image_url}')" class="img-thumbnail">
+            `;
+        }
+        
+        item.innerHTML = content;
+        historyEl.appendChild(item);
+    });
+}
+
+function getConditionBadgeClass(condition) {
+    const classes = {
+        'cavity': 'bg-danger',
+        'crown': 'bg-warning',
+        'filling': 'bg-success',
+        'root_canal': 'bg-info',
+        'extraction': 'bg-secondary',
+        'sensitive': 'bg-warning'
+    };
+    return classes[condition] || 'bg-primary';
+}
+
+function getConditionColor(condition) {
+    const colors = {
+        'cavity': '#dc3545',
+        'crown': '#ffc107',
+        'filling': '#28a745',
+        'root_canal': '#17a2b8',
+        'extraction': '#6c757d',
+        'sensitive': '#fd7e14'
+    };
+    return colors[condition] || '#ccc';
+}
+
+function selectTooth(number) {
+    document.getElementById('selectedTooth').value = number;
+    document.querySelectorAll('.tooth, .tooth-area').forEach(el => {
+        el.classList.remove('selected');
+    });
+    document.querySelector(`[data-tooth="${number}"]`).classList.add('selected');
+}
+
+function showImagePreview(url) {
+    const modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+    document.getElementById('previewImage').src = url;
+    modal.show();
+}
+
+document.getElementById('conditionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const toothNumber = document.getElementById('selectedTooth').value;
+    if (!toothNumber) {
+        alert('Please select a tooth first');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('tooth_number', toothNumber);
+    formData.append('condition', document.getElementById('condition').value);
+    formData.append('notes', document.getElementById('notes').value);
+    
+    const imageFile = document.getElementById('image').files[0];
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    
+    fetch(`/api/appointments/{{ appointment.id }}/teeth`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentConditions.push(data.condition);
+            updateToothDisplay();
+            updateConditionHistory();
+            this.reset();
+        } else {
+            alert('Error adding condition: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding condition');
+    });
+});
+
+// Load conditions when page loads
+document.addEventListener('DOMContentLoaded', loadConditions);
+</script>
+{% endblock %} 
