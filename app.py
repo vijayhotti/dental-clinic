@@ -39,7 +39,7 @@ csrf = CSRFProtect(app)
 # Force HTTPS
 @app.before_request
 def before_request():
-    if not request.is_secure and app.env != "development":
+    if not request.is_secure and os.environ.get('FLASK_ENV') != 'development':
         url = request.url.replace('http://', 'https://', 1)
         return redirect(url, code=301)
 
