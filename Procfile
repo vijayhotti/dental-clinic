@@ -1,1 +1,1 @@
-web: gunicorn --bind 0.0.0.0:8000 application:application 
+web: gunicorn --bind 0.0.0.0:8000 --workers=3 --log-level=debug --error-logfile=/tmp/gunicorn-error.log --access-logfile=/tmp/gunicorn-access.log application:application 
