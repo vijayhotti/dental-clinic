@@ -1,11 +1,16 @@
 #!/bin/bash
-set -e  # Exit on error
-set -x  # Print commands as they are executed
 
-LOG_FILE="/tmp/init_db.log"
+# Redirect all output to log file
+exec 1> >(logger -s -t $(basename $0)) 2>&1
+
+LOG_FILE="/var/log/eb-hooks.log"
 APP_DIR="/var/app/current"
 INSTANCE_DIR="$APP_DIR/instance"
 UPLOADS_DIR="$APP_DIR/uploads"
+
+# Error handling
+set -e  # Exit on error
+trap 'echo "Error on line $LINENO"' ERR
 
 echo "Starting DB init at $(date)" | tee -a $LOG_FILE
 

@@ -11,7 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from collections import Counter
 import csv
 from io import StringIO
-from sqlalchemy import and_
+from sqlalchemy import and_, text
 from werkzeug.utils import secure_filename
 import json
 import logging
@@ -312,7 +312,7 @@ def appointments():
                     logger.error("No write permission to instance directory: %s", instance_path)
                     raise RuntimeError("Database access error. Please contact support.")
                 
-                db.session.execute('SELECT 1')
+                db.session.execute(text('SELECT 1'))
             except Exception as db_error:
                 logger.error("Database connection error: %s", str(db_error))
                 raise RuntimeError("Database connection error. Please try again later.")
