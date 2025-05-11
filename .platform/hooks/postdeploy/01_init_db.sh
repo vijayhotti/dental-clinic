@@ -36,8 +36,8 @@ log_message "Initializing database..."
 cd $APP_DIR
 
 # Try to initialize database with error handling
-if ! python3 -c "from app import app, init_db; init_db()"; then
-    log_message "ERROR: Failed to initialize database"
+if ! /usr/bin/python3.11 -m app_init_db >> /var/log/app/init_db.log 2>&1; then
+    log_message "ERROR: Failed to initialize database. See /var/log/app/init_db.log for details."
     exit 1
 fi
 
