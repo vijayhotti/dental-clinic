@@ -22,7 +22,11 @@ app = Flask(__name__)
 
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
-db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance', 'dental_clinic.db')
+# Use persistent path for SQLite on AWS EB
+if os.environ.get('AWS_EXECUTION_ENV'):
+    db_path = '/var/app/data/dental_clinic.db'
+else:
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance', 'dental_clinic.db')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f'sqlite:///{db_path}')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
