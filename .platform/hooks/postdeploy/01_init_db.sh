@@ -35,9 +35,14 @@ chmod -R 775 $UPLOADS_DIR
 log_message "Initializing database..."
 cd $APP_DIR
 
-# Try to initialize database with error handling
-if ! /usr/bin/python3.11 -m app_init_db >> /var/log/app/init_db.log 2>&1; then
-    log_message "ERROR: Failed to initialize database. See /var/log/app/init_db.log for details."
+# Activate the EB Python venv and run the init script
+if source /var/app/venv/*/bin/activate; then
+    if ! python -m app_init_db >> /var/log/app/init_db.log 2>&1; then
+        log_message "ERROR: Failed to initialize database. See /var/log/app/init_db.log for details."
+        exit 1
+    fi
+else
+    log_message "ERROR: Could not activate EB Python virtual environment."
     exit 1
 fi
 
