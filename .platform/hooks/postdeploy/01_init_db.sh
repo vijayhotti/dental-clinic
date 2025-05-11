@@ -33,7 +33,6 @@ chmod -R 775 $UPLOADS_DIR
 
 # Initialize database
 log_message "Initializing database..."
-source /var/app/venv/*/bin/activate
 cd $APP_DIR
 
 # Try to initialize database with error handling
