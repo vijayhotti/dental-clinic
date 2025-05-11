@@ -22,12 +22,15 @@ app = Flask(__name__)
 
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
-# Use persistent path for SQLite on AWS EB
-if os.environ.get('AWS_EXECUTION_ENV'):
-    db_path = '/var/app/data/dental_clinic.db'
+# Use RDS if DATABASE_URL is set, otherwise use persistent SQLite for EB, otherwise local SQLite
+if os.environ.get('DATABASE_URL'):
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 else:
-    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance', 'dental_clinic.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f'sqlite:///{db_path}')
+    if os.environ.get('AWS_EXECUTION_ENV'):
+        db_path = '/var/app/data/dental_clinic.db'
+    else:
+        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance', 'dental_clinic.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
@@ -527,12 +530,18 @@ def init_db():
         instance_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
         os.makedirs(instance_path, exist_ok=True)
 
-        # Set proper permissions for the instance directory
-        os.chmod(instance_path, 0o777)
+        # Set proper permissions for the instance directory (ignore errors if not permitted)
+        try:
+            os.chmod(instance_path, 0o777)
+        except PermissionError:
+            logger.warning(f"Could not chmod instance directory: {instance_path}")
 
         db_path = os.path.join(instance_path, 'dental_clinic.db')
         if os.path.exists(db_path):
-            os.chmod(db_path, 0o666)
+            try:
+                os.chmod(db_path, 0o666)
+            except PermissionError:
+                logger.warning(f"Could not chmod db file: {db_path}")
 
         db.create_all()
 
@@ -549,7 +558,10 @@ def init_db():
             db.session.commit()
 
         if os.path.exists(db_path):
-            os.chmod(db_path, 0o666)
+            try:
+                os.chmod(db_path, 0o666)
+            except PermissionError:
+                logger.warning(f"Could not chmod db file: {db_path}")
 
         print("Database initialized successfully.")
 
