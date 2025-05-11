@@ -6,7 +6,10 @@
 <div class="hero-section text-center py-5">
     <h1 class="display-4">Welcome to Our Dental Clinic</h1>
     <p class="lead">Professional dental care for your entire family</p>
-    <a href="{{ url_for('appointments') }}" class="btn btn-primary btn-lg">Book an Appointment</a>
+    <a href="{{ url_for('appointments') }}" class="btn btn-primary btn-lg me-2">Book an Appointment</a>
+    <a href="{{ url_for('services') }}" class="btn btn-outline-info btn-lg me-2">View Services</a>
+    <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary btn-lg me-2">Contact Us</a>
+    <a href="{{ url_for('admin') }}" class="btn btn-outline-dark btn-lg">Admin Dashboard</a>
 </div>
 
 <div class="row mt-5">
@@ -35,4 +38,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

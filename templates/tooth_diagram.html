@@ -62,6 +62,7 @@
                     <h5 class="mb-0">Add Condition</h5>
                 </div>
                 <div class="card-body">
+                    <a href="{{ url_for('admin') }}" class="btn btn-secondary mb-3">&larr; Back to Appointments</a>
                     <form id="conditionForm" method="POST">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" id="selectedTooth">
@@ -336,6 +337,9 @@
 <script>
 let currentConditions = [];
 
+// Get CSRF token from meta tag
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
 function loadConditions() {
     fetch(`/api/appointments/{{ appointment.id }}/teeth`)
         .then(response => response.json())
@@ -450,9 +454,13 @@ document.getElementById('conditionForm').addEventListener('submit', function(e) 
         formData.append('image', imageFile);
     }
     
+    // Add CSRF token to formData
+    formData.append('csrf_token', csrfToken);
+    
     fetch(`/api/appointments/{{ appointment.id }}/teeth`, {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'same-origin'
     })
     .then(response => response.json())
     .then(data => {
@@ -474,4 +482,4 @@ document.getElementById('conditionForm').addEventListener('submit', function(e) 
 // Load conditions when page loads
 document.addEventListener('DOMContentLoaded', loadConditions);
 </script>
-{% endblock %} 
+{% endblock %}

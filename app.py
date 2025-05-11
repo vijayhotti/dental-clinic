@@ -361,6 +361,16 @@ def appointments():
     return render_template('appointments.html')
 
 
+@app.route('/appointments/all')
+@login_required
+def all_appointments():
+    if not current_user.is_admin:
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('home'))
+    appointments = Appointment.query.order_by(Appointment.appointment_date.desc()).all()
+    return render_template('appointments.html', appointments=appointments, view_all=True)
+
+
 @app.route('/services')
 def services():
     return render_template('services.html')
