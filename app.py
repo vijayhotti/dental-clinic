@@ -1,20 +1,19 @@
 # Force redeploy: ensure latest code is deployed
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file, session, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_wtf.csrf import CSRFProtect
-from flask_wtf.csrf import CSRFError
-from datetime import datetime, timedelta
+from flask_wtf.csrf import CSRFProtect, CSRFError
+from datetime import datetime
 import os
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from collections import Counter
 import csv
 from io import StringIO
-from sqlalchemy import and_, text
+from sqlalchemy import text
 from werkzeug.utils import secure_filename
-import json
 import logging
+
 
 # Load environment variables
 load_dotenv()
@@ -44,6 +43,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 csrf = CSRFProtect(app)
 
+
 # Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,6 +51,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
+
 
 class Appointment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -63,6 +64,7 @@ class Appointment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     tooth_conditions = db.relationship('ToothCondition', backref='appointment', lazy=True)
 
+
 class ToothCondition(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     appointment_id = db.Column(db.Integer, db.ForeignKey('appointment.id'), nullable=False)
@@ -72,14 +74,17 @@ class ToothCondition(db.Model):
     image_url = db.Column(db.String(200))  # Path to uploaded image
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
 
 # Error handlers
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('404.html'), 404
+
 
 @app.errorhandler(500)
 def internal_error(error):
@@ -87,25 +92,28 @@ def internal_error(error):
     logger.error(f"Internal server error: {error}")
     return render_template('500.html'), 500
 
+
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
     logger.error(f"CSRF error: {e.description}")
     flash('Security token has expired. Please try again.', 'error')
     return redirect(url_for('appointments'))
 
+
 # Routes
 @app.route('/')
 def home():
     return render_template('index.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
+
         user = User.query.filter_by(username=username).first()
-        
+
         if user and check_password_hash(user.password, password):
             login_user(user)
             flash('Logged in successfully!', 'success')
@@ -113,8 +121,9 @@ def login():
             return redirect(next_page or url_for('admin'))
         else:
             flash('Invalid username or password', 'error')
-    
+
     return render_template('login.html')
+
 
 @app.route('/logout')
 @login_required
@@ -123,21 +132,22 @@ def logout():
     flash('Logged out successfully!', 'success')
     return redirect(url_for('home'))
 
+
 @app.route('/admin')
 @login_required
 def admin():
     if not current_user.is_admin:
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('home'))
-    
+
     # Get filter parameters
     service = request.args.get('service', '')
     date_from = request.args.get('date_from', '')
     date_to = request.args.get('date_to', '')
-    
+
     # Base query
     query = Appointment.query
-    
+
     # Apply filters
     if service:
         query = query.filter(Appointment.service_type == service)
@@ -145,31 +155,34 @@ def admin():
         query = query.filter(Appointment.appointment_date >= datetime.strptime(date_from, '%Y-%m-%d'))
     if date_to:
         query = query.filter(Appointment.appointment_date <= datetime.strptime(date_to, '%Y-%m-%d'))
-    
+
     # Get appointments
     appointments = query.order_by(Appointment.appointment_date.desc()).all()
-    
+
     # Get unique services for filter dropdown
     services = db.session.query(Appointment.service_type).distinct().all()
     services = [s[0] for s in services]
-    
+
     # Get service statistics
     service_stats = Counter(appointment.service_type for appointment in appointments)
-    
-    return render_template('admin.html',
-                         appointments=appointments,
-                         service_stats=service_stats,
-                         services=services,
-                         selected_service=service,
-                         date_from=date_from,
-                         date_to=date_to)
+
+    return render_template(
+        'admin.html',
+        appointments=appointments,
+        service_stats=service_stats,
+        services=services,
+        selected_service=service,
+        date_from=date_from,
+        date_to=date_to
+    )
+
 
 @app.route('/api/appointments/<int:id>', methods=['GET'])
 @login_required
 def get_appointment(id):
     if not current_user.is_admin:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     appointment = Appointment.query.get_or_404(id)
     return jsonify({
         'id': appointment.id,
@@ -181,15 +194,16 @@ def get_appointment(id):
         'notes': appointment.notes
     })
 
+
 @app.route('/api/appointments/<int:id>', methods=['PUT'])
 @login_required
 def update_appointment(id):
     if not current_user.is_admin:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     appointment = Appointment.query.get_or_404(id)
     data = request.get_json()
-    
+
     try:
         appointment.patient_name = data['patient_name']
         appointment.patient_email = data['patient_email']
@@ -197,7 +211,7 @@ def update_appointment(id):
         appointment.service_type = data['service_type']
         appointment.appointment_date = datetime.strptime(data['appointment_date'], '%Y-%m-%d')
         appointment.notes = data.get('notes', '')
-        
+
         db.session.commit()
         return jsonify({'success': True})
     except Exception as e:
@@ -205,12 +219,13 @@ def update_appointment(id):
         logger.error(f"Error updating appointment {id}: {e}")
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/api/appointments/<int:id>', methods=['DELETE'])
 @login_required
 def delete_appointment(id):
     if not current_user.is_admin:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     appointment = Appointment.query.get_or_404(id)
     try:
         db.session.delete(appointment)
@@ -221,20 +236,21 @@ def delete_appointment(id):
         logger.error(f"Error deleting appointment {id}: {e}")
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/export/appointments')
 @login_required
 def export_appointments():
     if not current_user.is_admin:
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('home'))
-    
+
     # Create CSV in memory
     si = StringIO()
     cw = csv.writer(si)
-    
+
     # Write header
     cw.writerow(['ID', 'Patient Name', 'Email', 'Phone', 'Service', 'Date', 'Notes', 'Created At'])
-    
+
     # Write data
     appointments = Appointment.query.order_by(Appointment.appointment_date.desc()).all()
     for appointment in appointments:
@@ -248,11 +264,11 @@ def export_appointments():
             appointment.notes,
             appointment.created_at.strftime('%Y-%m-%d %H:%M')
         ])
-    
+
     # Prepare response
     output = si.getvalue()
     si.close()
-    
+
     return send_file(
         StringIO(output),
         mimetype='text/csv',
@@ -260,23 +276,24 @@ def export_appointments():
         download_name=f'appointments_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
     )
 
+
 @app.route('/appointments', methods=['GET', 'POST'])
 def appointments():
     if request.method == 'POST':
         try:
             # Let Flask-WTF handle CSRF validation automatically
             # An error will be raised and caught by the error handler if the token is invalid
-            
+
             # Log the full request context
             logger.debug("Processing appointment request")
             logger.debug("Request form data: %s", {k: v for k, v in request.form.items() if k != 'csrf_token'})
-            
+
             # Validate required fields
             required_fields = ['name', 'email', 'phone', 'date', 'service']
             for field in required_fields:
                 if not request.form.get(field):
                     raise ValueError(f"Missing required field: {field}")
-            
+
             # Validate date format
             try:
                 appointment_date = datetime.strptime(request.form['date'], '%Y-%m-%d')
@@ -286,7 +303,7 @@ def appointments():
                 if "time data" in str(ve):
                     raise ValueError("Invalid date format. Please use YYYY-MM-DD format")
                 raise ve
-            
+
             # Create appointment object
             new_appointment = Appointment(
                 patient_name=request.form['name'],
@@ -296,7 +313,7 @@ def appointments():
                 service_type=request.form['service'],
                 notes=request.form.get('notes', '')
             )
-            
+
             # Log the appointment object
             logger.debug("Created appointment object: %s", {
                 'patient_name': new_appointment.patient_name,
@@ -304,34 +321,34 @@ def appointments():
                 'appointment_date': new_appointment.appointment_date,
                 'service_type': new_appointment.service_type
             })
-            
+
             # Check database connection and instance directory permissions
             try:
                 instance_path = os.path.dirname(db_path)
                 if not os.access(instance_path, os.W_OK):
                     logger.error("No write permission to instance directory: %s", instance_path)
                     raise RuntimeError("Database access error. Please contact support.")
-                
+
                 db.session.execute(text('SELECT 1'))
             except Exception as db_error:
                 logger.error("Database connection error: %s", str(db_error))
                 raise RuntimeError("Database connection error. Please try again later.")
-            
+
             # Save the appointment
             db.session.add(new_appointment)
             db.session.commit()
-            
+
             logger.info("Appointment created successfully: ID=%d", new_appointment.id)
             flash('Appointment scheduled successfully!', 'success')
             return redirect(url_for('appointments'))
-            
+
         except ValueError as ve:
             db.session.rollback()
             error_msg = str(ve)
             logger.warning("Validation error: %s", error_msg)
             flash(error_msg, 'error')
             return redirect(url_for('appointments'))
-            
+
         except Exception as e:
             db.session.rollback()
             error_msg = str(e)
@@ -339,27 +356,29 @@ def appointments():
             logger.error("Database path: %s", app.config['SQLALCHEMY_DATABASE_URI'])
             flash('An error occurred while scheduling the appointment. Please try again later.', 'error')
             return redirect(url_for('appointments'))
-    
+
     # GET request - display the form
     return render_template('appointments.html')
+
 
 @app.route('/services')
 def services():
     return render_template('services.html')
 
+
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
+
 
 @app.route('/api/appointments/<int:id>/teeth', methods=['GET'])
 @login_required
 def get_tooth_conditions(id):
     if not current_user.is_admin:
         return jsonify({'error': 'Unauthorized'}), 403
-    
-    appointment = Appointment.query.get_or_404(id)
+
     conditions = ToothCondition.query.filter_by(appointment_id=id).all()
-    
+
     return jsonify({
         'conditions': [{
             'id': c.id,
@@ -369,14 +388,13 @@ def get_tooth_conditions(id):
         } for c in conditions]
     })
 
+
 @app.route('/api/appointments/<int:id>/teeth', methods=['POST'])
 @login_required
 def add_tooth_condition(id):
     if not current_user.is_admin:
         return jsonify({'error': 'Unauthorized'}), 403
-    
-    appointment = Appointment.query.get_or_404(id)
-    
+
     try:
         # Handle image upload
         image_url = None
@@ -387,7 +405,7 @@ def add_tooth_condition(id):
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(file_path)
                 image_url = f"/static/uploads/teeth/{filename}"
-        
+
         condition = ToothCondition(
             appointment_id=id,
             tooth_number=int(request.form['tooth_number']),
@@ -397,7 +415,7 @@ def add_tooth_condition(id):
         )
         db.session.add(condition)
         db.session.commit()
-        
+
         return jsonify({
             'success': True,
             'condition': {
@@ -413,12 +431,13 @@ def add_tooth_condition(id):
         logger.error(f"Error adding tooth condition for appointment {id}: {e}")
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/api/appointments/<int:id>/teeth/<int:condition_id>', methods=['DELETE'])
 @login_required
 def delete_tooth_condition(id, condition_id):
     if not current_user.is_admin:
         return jsonify({'error': 'Unauthorized'}), 403
-    
+
     condition = ToothCondition.query.filter_by(id=condition_id, appointment_id=id).first_or_404()
     try:
         db.session.delete(condition)
@@ -429,15 +448,17 @@ def delete_tooth_condition(id, condition_id):
         logger.error(f"Error deleting tooth condition {condition_id} for appointment {id}: {e}")
         return jsonify({'error': str(e)}), 400
 
+
 @app.route('/appointments/<int:id>/teeth')
 @login_required
 def view_tooth_diagram(id):
     if not current_user.is_admin:
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('home'))
-    
+
     appointment = Appointment.query.get_or_404(id)
     return render_template('tooth_diagram.html', appointment=appointment)
+
 
 @app.route('/debug')
 def debug():
@@ -450,6 +471,7 @@ def debug():
         'is_mobile': 'Mobile' in user_agent or 'Android' in user_agent or 'iPhone' in user_agent
     })
 
+
 @app.before_request
 def before_request():
     # Temporarily disable HTTPS redirect for development
@@ -458,21 +480,22 @@ def before_request():
     #     return redirect(url, code=301)
     pass
 
+
 def init_db():
     with app.app_context():
         # Ensure instance directory exists
         instance_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
         os.makedirs(instance_path, exist_ok=True)
-        
+
         # Set proper permissions for the instance directory
         os.chmod(instance_path, 0o777)
-        
+
         db_path = os.path.join(instance_path, 'dental_clinic.db')
         if os.path.exists(db_path):
             os.chmod(db_path, 0o666)
-            
+
         db.create_all()
-        
+
         # Create admin user if it doesn't exist
         admin = User.query.filter_by(username='admin').first()
         if not admin:
@@ -484,11 +507,12 @@ def init_db():
             )
             db.session.add(admin)
             db.session.commit()
-            
+
         if os.path.exists(db_path):
             os.chmod(db_path, 0o666)
-            
+
         print("Database initialized successfully.")
+
 
 if __name__ == '__main__':
     init_db()
