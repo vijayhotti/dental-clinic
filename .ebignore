@@ -5,3 +5,5 @@ instance/
 .git/
 .gitignore
 *.log
+.venv/
+venv/
