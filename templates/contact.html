@@ -3,33 +3,44 @@
 {% block title %}Contact Us{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="text-center mb-5">Contact Us</h1>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Contact Us</h2>
+        <div>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-dark me-2">Home</a>
+            <a href="{{ url_for('appointments') }}" class="btn btn-outline-primary me-2">Book Appointment</a>
+            <a href="{{ url_for('services') }}" class="btn btn-outline-info">Services</a>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-6">
-            <form method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="mb-3">
-                    <label for="name" class="form-label">Your Name</label>
-                    <input type="text" class="form-control" id="name" required>
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Your Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea class="form-control" id="message" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
                 </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Your Email</label>
-                    <input type="email" class="form-control" id="email" required>
-                </div>
-                <div class="mb-3">
-                    <label for="phone" class="form-label">Phone Number</label>
-                    <input type="tel" class="form-control" id="phone" required>
-                </div>
-                <div class="mb-3">
-                    <label for="message" class="form-label">Message</label>
-                    <textarea class="form-control" id="message" rows="4" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Send Message</button>
-            </form>
+            </div>
         </div>
         <div class="col-md-6">
-            <div class="card">
+            <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Clinic Information</h5>
                     <div class="mb-4">
@@ -55,4 +66,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

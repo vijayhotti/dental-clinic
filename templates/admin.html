@@ -3,114 +3,192 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="text-center mb-5">Admin Dashboard</h1>
-    <div class="mb-4">
-        <a href="{{ url_for('appointments') }}" class="btn btn-outline-primary me-2">Book New Appointment</a>
-        <a href="{{ url_for('all_appointments') }}" class="btn btn-outline-info me-2">View All Appointments</a>
-        <a href="{{ url_for('services') }}" class="btn btn-outline-secondary me-2">View Services</a>
-        <a href="{{ url_for('home') }}" class="btn btn-outline-dark">Home</a>
+<div class="container py-4 position-relative">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h1>
+        <div>
+            <a href="{{ url_for('appointments') }}" class="btn btn-primary me-2" data-bs-toggle="tooltip" title="Book a new appointment"><i class="bi bi-calendar-plus"></i> Book Appointment</a>
+            <a href="{{ url_for('all_appointments') }}" class="btn btn-outline-info me-2" data-bs-toggle="tooltip" title="View all appointments"><i class="bi bi-list-ul"></i> All Appointments</a>
+            <a href="{{ url_for('services') }}" class="btn btn-outline-secondary me-2" data-bs-toggle="tooltip" title="Manage services"><i class="bi bi-gear"></i> Services</a>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-dark" data-bs-toggle="tooltip" title="Go to homepage"><i class="bi bi-house"></i> Home</a>
+        </div>
     </div>
-    
-    <!-- Filters and Export -->
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="bi bi-info-circle me-2"></i>Welcome, Admin! Use the dashboard to manage appointments and view statistics.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <!-- Summary Cards -->
     <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body">
-                    <form method="GET" class="row g-3">
-                        <div class="col-md-3">
-                            <label for="service_filter" class="form-label">Filter by Service</label>
-                            <select class="form-select" id="service_filter" name="service">
-                                <option value="">All Services</option>
-                                {% for service in services %}
-                                <option value="{{ service }}" {% if selected_service == service %}selected{% endif %}>{{ service }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="date_from" class="form-label">Date From</label>
-                            <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="date_to" class="form-label">Date To</label>
-                            <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary me-2">Filter</button>
-                            <a href="{{ url_for('export_appointments') }}" class="btn btn-success">Export CSV</a>
-                        </div>
-                    </form>
+        <div class="col-md-4">
+            <div class="card text-bg-primary shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <i class="bi bi-people-fill display-5 me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-1">Total Appointments</h5>
+                        <h3 class="mb-0">{{ total_appointments }}</h3>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Appointments Table -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Appointments Overview</h5>
+        <div class="col-md-4">
+            <div class="card text-bg-success shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <i class="bi bi-calendar-check display-5 me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-1">Upcoming</h5>
+                        <h3 class="mb-0">{{ upcoming_appointments }}</h3>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Patient Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Service</th>
-                                    <th>Date</th>
-                                    <th>Notes</th>
-                                    <th>Created At</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for appointment in appointments %}
-                                <tr>
-                                    <td>{{ appointment.id }}</td>
-                                    <td>{{ appointment.patient_name }}</td>
-                                    <td>{{ appointment.patient_email }}</td>
-                                    <td>{{ appointment.patient_phone }}</td>
-                                    <td>{{ appointment.service_type }}</td>
-                                    <td>{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</td>
-                                    <td>{{ appointment.notes }}</td>
-                                    <td>{{ appointment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary" onclick="editAppointment({{ appointment.id }})">Edit</button>
-                                        <button class="btn btn-sm btn-danger" onclick="deleteAppointment({{ appointment.id }})">Delete</button>
-                                        <a href="{{ url_for('view_tooth_diagram', id=appointment.id) }}" class="btn btn-sm btn-info">Teeth</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-secondary shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <i class="bi bi-clock-history display-5 me-3"></i>
+                    <div>
+                        <h5 class="card-title mb-1">Past</h5>
+                        <h3 class="mb-0">{{ past_appointments }}</h3>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Statistics -->
+    <!-- Search and Filter -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="service_filter" class="form-label">Filter by Service</label>
+                    <select class="form-select" id="service_filter" name="service">
+                        <option value="">All Services</option>
+                        {% for service in services %}
+                        <option value="{{ service }}" {% if selected_service == service %}selected{% endif %}>{{ service }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_from" class="form-label">Date From</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="date_to" class="form-label">Date To</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <input type="text" class="form-control" name="search" placeholder="Search by name/email" value="{{ search or '' }}">
+                    <button type="submit" class="btn btn-success"><i class="bi bi-funnel"></i> Filter</button>
+                    <a href="{{ url_for('export_appointments') }}" class="btn btn-outline-success"><i class="bi bi-download"></i> Export CSV</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Appointments Table -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white d-flex align-items-center">
+            <h5 class="mb-0 flex-grow-1"><i class="bi bi-table me-2"></i>Appointments Overview</h5>
+            <span class="badge bg-light text-primary ms-2">{{ appointments|length }} total</span>
+            <button class="btn btn-sm btn-dark ms-2" id="darkModeToggle" data-bs-toggle="tooltip" title="Toggle dark mode"><i class="bi bi-moon"></i></button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="appointmentsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr class="table-row-hover">
+                            <td>{{ appointment.id }}</td>
+                            <td><i class="bi bi-person-circle me-1 text-primary"></i>{{ appointment.patient_name }}</td>
+                            <td><a href="mailto:{{ appointment.patient_email }}" data-bs-toggle="tooltip" title="Send Email"><i class="bi bi-envelope"></i> {{ appointment.patient_email }}</a></td>
+                            <td><a href="tel:{{ appointment.patient_phone }}" data-bs-toggle="tooltip" title="Call"><i class="bi bi-telephone"></i> {{ appointment.patient_phone }}</a></td>
+                            <td>{{ appointment.service_type }}</td>
+                            <td><span class="badge bg-info text-dark">{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</span></td>
+                            <td>
+                                {% set appt_date = appointment.appointment_date.date() if appointment.appointment_date.__class__.__name__ == 'datetime' else appointment.appointment_date %}
+                                {% if appt_date >= current_date %}
+                                    <span class="badge bg-success">Upcoming</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Past</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ appointment.notes }}</td>
+                            <td><span class="text-muted small">{{ appointment.created_at.strftime('%Y-%m-%d %H:%M') }}</span></td>
+                            <td>
+                                <a href="{{ url_for('view_tooth_diagram', id=appointment.id) }}" class="btn btn-sm btn-info mb-1" data-bs-toggle="tooltip" title="View Tooth Diagram"><i class="bi bi-diagram-3"></i></a>
+                                <button class="btn btn-sm btn-primary mb-1" onclick="editAppointment({{ appointment.id }})" data-bs-toggle="tooltip" title="Edit Appointment"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-danger mb-1" onclick="deleteAppointment({{ appointment.id }})" data-bs-toggle="tooltip" title="Delete Appointment"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Service Stats and Quick Actions -->
     <div class="row">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Service Statistics</h5>
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart-line"></i> Service Statistics</h5>
                 </div>
                 <div class="card-body">
                     <ul class="list-group">
                         {% for service, count in service_stats.items() %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ service }}
+                            <span><i class="bi bi-check2-circle text-success me-2"></i>{{ service }}</span>
                             <span class="badge bg-primary rounded-pill">{{ count }}</span>
                         </li>
                         {% endfor %}
                     </ul>
                 </div>
+            </div>
+        </div>
+        <div class="col-md-6 d-flex align-items-stretch">
+            <div class="card shadow-sm w-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body d-flex flex-column gap-2">
+                    <a href="{{ url_for('appointments') }}" class="btn btn-outline-primary"><i class="bi bi-calendar-plus"></i> Book New Appointment</a>
+                    <a href="{{ url_for('all_appointments') }}" class="btn btn-outline-info"><i class="bi bi-list-ul"></i> View All Appointments</a>
+                    <a href="{{ url_for('services') }}" class="btn btn-outline-secondary"><i class="bi bi-gear"></i> Manage Services</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Floating Action Button -->
+    <a href="{{ url_for('appointments') }}" class="btn btn-lg btn-primary rounded-circle shadow position-fixed" style="bottom: 2rem; right: 2rem; z-index: 1050;" data-bs-toggle="tooltip" title="Quick Book">
+        <i class="bi bi-plus-lg"></i>
+    </a>
+    <!-- Toasts -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+        <div id="toastSuccess" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle me-2"></i> <span id="toastSuccessMsg">Success!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+        <div id="toastError" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-x-circle me-2"></i> <span id="toastErrorMsg">Error!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
     </div>
@@ -121,7 +199,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Edit Appointment</h5>
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Appointment</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -159,7 +237,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="saveAppointment()">Save changes</button>
+                <button type="button" class="btn btn-primary" onclick="saveAppointment()"><i class="bi bi-save"></i> Save changes</button>
             </div>
         </div>
     </div>
@@ -167,9 +245,35 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Bootstrap Bundle with Popper -->
+<!-- Bootstrap Bundle with Popper and Bootstrap Icons -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+.table-row-hover:hover {
+    background-color: #f1f3f5 !important;
+    transition: background-color 0.2s;
+}
+body.dark-mode {
+    background-color: #181a1b !important;
+    color: #e9ecef !important;
+}
+body.dark-mode .card, body.dark-mode .modal-content {
+    background-color: #23272b !important;
+    color: #e9ecef !important;
+}
+body.dark-mode .table {
+    color: #e9ecef;
+}
+body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #23272b !important;
+}
+body.dark-mode .table-striped > tbody > tr:nth-of-type(even) {
+    background-color: #181a1b !important;
+}
+body.dark-mode .btn-close {
+    filter: invert(1);
+}
+</style>
 <script>
 // Get CSRF token from meta tag
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -182,11 +286,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Dark mode toggle
+const darkModeToggle = document.getElementById('darkModeToggle');
+darkModeToggle.addEventListener('click', function() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+});
+// Persist dark mode
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+}
+
+// Toast helpers
+function showToast(type, msg) {
+    if (type === 'success') {
+        document.getElementById('toastSuccessMsg').textContent = msg;
+        new bootstrap.Toast(document.getElementById('toastSuccess')).show();
+    } else {
+        document.getElementById('toastErrorMsg').textContent = msg;
+        new bootstrap.Toast(document.getElementById('toastError')).show();
+    }
+}
+
 function editAppointment(id) {
     // Show loading state
     const editBtn = document.querySelector(`button[onclick="editAppointment(${id})"]`);
     const originalText = editBtn.innerHTML;
-    editBtn.innerHTML = 'Loading...';
+    editBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Loading...';
     editBtn.disabled = true;
 
     fetch(`/api/appointments/${id}`)
@@ -212,7 +338,7 @@ function editAppointment(id) {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error loading appointment details. Please try again.');
+            showToast('error', 'Error loading appointment details. Please try again.');
         })
         .finally(() => {
             // Reset button state
@@ -234,7 +360,7 @@ function saveAppointment() {
     // Show loading state
     const saveBtn = document.querySelector('#editAppointmentModal .btn-primary');
     const originalText = saveBtn.innerHTML;
-    saveBtn.innerHTML = 'Saving...';
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
     saveBtn.disabled = true;
 
     const data = {
@@ -265,24 +391,17 @@ function saveAppointment() {
     })
     .then(data => {
         if (data.success) {
-            // Close modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('editAppointmentModal'));
             modal.hide();
-            
-            // Show success message
-            alert('Appointment updated successfully');
-            
-            // Reload page after a short delay
-            setTimeout(() => {
-                location.reload();
-            }, 500);
+            showToast('success', 'Appointment updated successfully');
+            setTimeout(() => { location.reload(); }, 800);
         } else {
             throw new Error(data.error || 'Unknown error occurred');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error updating appointment: ' + error.message);
+        showToast('error', 'Error updating appointment: ' + error.message);
     })
     .finally(() => {
         // Reset button state
@@ -296,7 +415,7 @@ function deleteAppointment(id) {
         // Show loading state
         const deleteBtn = document.querySelector(`button[onclick="deleteAppointment(${id})"]`);
         const originalText = deleteBtn.innerHTML;
-        deleteBtn.innerHTML = 'Deleting...';
+        deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting...';
         deleteBtn.disabled = true;
 
         fetch(`/api/appointments/${id}`, {
@@ -317,24 +436,18 @@ function deleteAppointment(id) {
         })
         .then(data => {
             if (data.success) {
-                // Show success message
-                alert('Appointment deleted successfully');
-                
-                // Remove the row from the table
+                showToast('success', 'Appointment deleted successfully');
                 const row = deleteBtn.closest('tr');
                 row.style.backgroundColor = '#ffebee';
                 row.style.transition = 'background-color 0.5s ease';
-                
-                setTimeout(() => {
-                    row.remove();
-                }, 500);
+                setTimeout(() => { row.remove(); }, 500);
             } else {
                 throw new Error(data.error || 'Unknown error occurred');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error deleting appointment: ' + error.message);
+            showToast('error', 'Error deleting appointment: ' + error.message);
         })
         .finally(() => {
             // Reset button state

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Book an Appointment{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Book an Appointment</h2>
+        <div>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-dark me-2">Home</a>
+            <a href="{{ url_for('services') }}" class="btn btn-outline-info me-2">Services</a>
+            <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary">Contact</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Preferred Date</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="service" class="form-label">Service Required</label>
+                            <select class="form-select" id="service" name="service" required>
+                                <option value="">Select a service</option>
+                                <option value="General Checkup">General Checkup</option>
+                                <option value="Cleaning">Cleaning</option>
+                                <option value="Whitening">Whitening</option>
+                                <option value="Filling">Filling</option>
+                                <option value="Root Canal">Root Canal</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Additional Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Book Appointment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Our Services</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item">General Checkup - Comprehensive dental examination and cleaning</li>
+                        <li class="list-group-item">Teeth Whitening - Professional teeth whitening services</li>
+                        <li class="list-group-item">Dental Fillings - Tooth-colored fillings for cavities</li>
+                        <li class="list-group-item">Root Canal Treatment - Advanced endodontic treatment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

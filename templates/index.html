@@ -3,18 +3,19 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="hero-section text-center py-5">
-    <h1 class="display-4">Welcome to Our Dental Clinic</h1>
-    <p class="lead">Professional dental care for your entire family</p>
-    <a href="{{ url_for('appointments') }}" class="btn btn-primary btn-lg me-2">Book an Appointment</a>
-    <a href="{{ url_for('services') }}" class="btn btn-outline-info btn-lg me-2">View Services</a>
-    <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary btn-lg me-2">Contact Us</a>
-    <a href="{{ url_for('admin') }}" class="btn btn-outline-dark btn-lg">Admin Dashboard</a>
+<div class="hero-section text-center py-5 bg-light rounded mb-4">
+    <h1 class="display-4 mb-3">Welcome to Our Dental Clinic</h1>
+    <p class="lead mb-4">Professional dental care for your entire family</p>
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
+        <a href="{{ url_for('appointments') }}" class="btn btn-primary btn-lg">Book Appointment</a>
+        <a href="{{ url_for('services') }}" class="btn btn-outline-info btn-lg">View Services</a>
+        <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary btn-lg">Contact Us</a>
+        <a href="{{ url_for('admin') }}" class="btn btn-outline-dark btn-lg">Admin Dashboard</a>
+    </div>
 </div>
-
-<div class="row mt-5">
+<div class="row mt-4 g-4">
     <div class="col-md-4">
-        <div class="card">
+        <div class="card h-100 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">Expert Care</h5>
                 <p class="card-text">Our team of experienced dentists provides the highest quality dental care.</p>
@@ -22,7 +23,7 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card">
+        <div class="card h-100 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">Modern Technology</h5>
                 <p class="card-text">We use the latest dental technology to ensure the best treatment.</p>
@@ -30,7 +31,7 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card">
+        <div class="card h-100 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">Comfortable Environment</h5>
                 <p class="card-text">We create a relaxing atmosphere for all our patients.</p>

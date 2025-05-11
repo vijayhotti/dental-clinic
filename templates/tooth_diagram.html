@@ -3,12 +3,14 @@
 {% block title %}Tooth Diagram - {{ appointment.patient_name }}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="text-center mb-4">Dental Chart - {{ appointment.patient_name }}</h1>
-    
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Dental Chart - {{ appointment.patient_name }}</h2>
+        <a href="{{ url_for('admin') }}" class="btn btn-outline-dark">&larr; Back to Appointments</a>
+    </div>
     <div class="row">
         <div class="col-md-8">
-            <div class="card">
+            <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <div class="tooth-diagram">
                         <!-- Full Mouth Image -->
@@ -20,7 +22,6 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        
                         <!-- Teeth Grid -->
                         <div class="teeth-grid-container">
                             <!-- Upper Teeth -->
@@ -36,7 +37,6 @@
                                     {% endfor %}
                                 </div>
                             </div>
-                            
                             <!-- Lower Teeth -->
                             <div class="lower-teeth">
                                 <h4 class="text-center mb-3">Lower Teeth</h4>
@@ -55,14 +55,12 @@
                 </div>
             </div>
         </div>
-        
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Add Condition</h5>
                 </div>
                 <div class="card-body">
-                    <a href="{{ url_for('admin') }}" class="btn btn-secondary mb-3">&larr; Back to Appointments</a>
                     <form id="conditionForm" method="POST">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" id="selectedTooth">
@@ -90,56 +88,32 @@
                     </form>
                 </div>
             </div>
-            
-            <div class="card mt-4">
-                <div class="card-header">
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
                     <h5 class="mb-0">Legend</h5>
                 </div>
                 <div class="card-body">
                     <div class="legend">
-                        <div class="legend-item">
-                            <span class="color-box cavity"></span>
-                            <span>Cavity</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="color-box crown"></span>
-                            <span>Crown</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="color-box filling"></span>
-                            <span>Filling</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="color-box root_canal"></span>
-                            <span>Root Canal</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="color-box extraction"></span>
-                            <span>Extraction</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="color-box sensitive"></span>
-                            <span>Sensitive</span>
-                        </div>
+                        <div class="legend-item"><span class="color-box cavity"></span><span>Cavity</span></div>
+                        <div class="legend-item"><span class="color-box crown"></span><span>Crown</span></div>
+                        <div class="legend-item"><span class="color-box filling"></span><span>Filling</span></div>
+                        <div class="legend-item"><span class="color-box root_canal"></span><span>Root Canal</span></div>
+                        <div class="legend-item"><span class="color-box extraction"></span><span>Extraction</span></div>
+                        <div class="legend-item"><span class="color-box sensitive"></span><span>Sensitive</span></div>
                     </div>
                 </div>
             </div>
-
-            <!-- Condition History -->
-            <div class="card mt-4">
-                <div class="card-header">
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">Condition History</h5>
                 </div>
                 <div class="card-body">
-                    <div id="conditionHistory" class="condition-history">
-                        <!-- Conditions will be loaded here -->
-                    </div>
+                    <div id="conditionHistory" class="condition-history"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 <!-- Image Preview Modal -->
 <div class="modal fade" id="imagePreviewModal" tabindex="-1">
     <div class="modal-dialog modal-lg">

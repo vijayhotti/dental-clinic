@@ -3,12 +3,18 @@
 {% block title %}Our Services{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="text-center mb-5">Our Dental Services</h1>
-    
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Our Dental Services</h2>
+        <div>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-dark me-2">Home</a>
+            <a href="{{ url_for('appointments') }}" class="btn btn-outline-primary me-2">Book Appointment</a>
+            <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary">Contact</a>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">General Checkup</h5>
                     <p class="card-text">Comprehensive dental examination and cleaning to maintain your oral health.</p>
@@ -20,9 +26,8 @@
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">Teeth Whitening</h5>
                     <p class="card-text">Professional teeth whitening services for a brighter smile.</p>
@@ -34,9 +39,8 @@
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">Dental Fillings</h5>
                     <p class="card-text">Tooth-colored fillings for cavities and damaged teeth.</p>
@@ -48,9 +52,8 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">Root Canal Treatment</h5>
                     <p class="card-text">Advanced endodontic treatment to save damaged teeth.</p>
@@ -62,9 +65,8 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">Dental Implants</h5>
                     <p class="card-text">Permanent solution for missing teeth.</p>
@@ -76,9 +78,8 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">Orthodontics</h5>
                     <p class="card-text">Professional teeth alignment services.</p>
@@ -92,4 +93,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

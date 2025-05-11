@@ -164,7 +164,19 @@ def admin():
     services = [s[0] for s in services]
 
     # Get service statistics
+    current_date = datetime.now().date()
     service_stats = Counter(appointment.service_type for appointment in appointments)
+
+    # Calculate upcoming and past appointments for admin dashboard
+    today = datetime.now().date()
+    def get_appt_date(appt):
+        # Always return a date object for comparison
+        if isinstance(appt.appointment_date, datetime):
+            return appt.appointment_date.date()
+        return appt.appointment_date
+    upcoming_appointments = sum(1 for a in appointments if get_appt_date(a) >= today)
+    past_appointments = sum(1 for a in appointments if get_appt_date(a) < today)
+    total_appointments = len(appointments)
 
     return render_template(
         'admin.html',
@@ -173,7 +185,11 @@ def admin():
         services=services,
         selected_service=service,
         date_from=date_from,
-        date_to=date_to
+        date_to=date_to,
+        current_date=current_date,
+        upcoming_appointments=upcoming_appointments,
+        past_appointments=past_appointments,
+        total_appointments=total_appointments
     )
 
 
@@ -340,14 +356,14 @@ def appointments():
 
             logger.info("Appointment created successfully: ID=%d", new_appointment.id)
             flash('Appointment scheduled successfully!', 'success')
-            return redirect(url_for('appointments'))
+            return render_template('book_appointment.html')
 
         except ValueError as ve:
             db.session.rollback()
             error_msg = str(ve)
             logger.warning("Validation error: %s", error_msg)
             flash(error_msg, 'error')
-            return redirect(url_for('appointments'))
+            return render_template('book_appointment.html')
 
         except Exception as e:
             db.session.rollback()
@@ -355,10 +371,10 @@ def appointments():
             logger.error("Error creating appointment: %s", error_msg, exc_info=True)
             logger.error("Database path: %s", app.config['SQLALCHEMY_DATABASE_URI'])
             flash('An error occurred while scheduling the appointment. Please try again later.', 'error')
-            return redirect(url_for('appointments'))
+            return render_template('book_appointment.html')
 
     # GET request - display the form
-    return render_template('appointments.html')
+    return render_template('book_appointment.html')
 
 
 @app.route('/appointments/all')
@@ -368,7 +384,17 @@ def all_appointments():
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('home'))
     appointments = Appointment.query.order_by(Appointment.appointment_date.desc()).all()
-    return render_template('appointments.html', appointments=appointments, view_all=True)
+    # Calculate upcoming and past appointments
+    today = datetime.now().date()
+    def get_appt_date(appt):
+        # Always return a date object for comparison
+        if isinstance(appt.appointment_date, datetime):
+            return appt.appointment_date.date()
+        return appt.appointment_date
+    upcoming_appointments = sum(1 for a in appointments if get_appt_date(a) >= today)
+    past_appointments = sum(1 for a in appointments if get_appt_date(a) < today)
+    total_appointments = len(appointments)
+    return render_template('appointments.html', appointments=appointments, view_all=True, upcoming_appointments=upcoming_appointments, past_appointments=past_appointments, total_appointments=total_appointments, today=today)
 
 
 @app.route('/services')
